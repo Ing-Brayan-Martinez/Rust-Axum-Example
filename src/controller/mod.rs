@@ -2,4 +2,6 @@ pub mod index_controller;
 
 pub mod order_controller;
 
+pub mod product_controller;
+
 pub mod task_controller;

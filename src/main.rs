@@ -1,16 +1,18 @@
-
-mod domain;
-mod controller;
 mod config;
+mod controller;
+mod domain;
 mod repository;
 
-use controller::index_controller::root;
-use axum::{routing::{get, post}, Router, };
+use axum::{Router, routing::get};
+use controller::{index_controller::root, order_controller, product_controller, task_controller};
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .route("/", get(root));
+        .route("/", get(root))
+        .merge(order_controller::router())
+        .merge(product_controller::router())
+        .merge(task_controller::router());
 
     let listener = 
         tokio::net::TcpListener::bind("0.0.0.0:3000")
@@ -23,4 +25,3 @@ async fn main() {
 
     println!("Server running on http:://localhost:3000")
 }
-
