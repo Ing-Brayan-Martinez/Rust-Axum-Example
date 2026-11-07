@@ -9,3 +9,4 @@ tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "net", "s
 serde = { version = "1.0.229", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 rust_decimal = { version = "1", features = ["serde"] }
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio", "chrono", "rust_decimal"] }

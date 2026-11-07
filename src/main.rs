@@ -14,14 +14,11 @@ async fn main() {
         .merge(product_controller::router())
         .merge(task_controller::router());
 
-    let listener = 
-        tokio::net::TcpListener::bind("0.0.0.0:3000")
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
         .expect("Failed to bind to address");
 
-    axum::serve(listener, app)
-        .await
-        .expect("Failed run Axum");
+    axum::serve(listener, app).await.expect("Failed run Axum");
 
     println!("Server running on http:://localhost:3000")
 }
