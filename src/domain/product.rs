@@ -4,6 +4,14 @@ use chrono::NaiveDateTime;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProductInput {
+    pub name: String,
+    pub price: Decimal,
+    pub stock: i32,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Product {

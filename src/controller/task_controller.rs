@@ -1,14 +1,13 @@
 use axum::{Json, Router, extract::Path, http::StatusCode, routing::get};
 use serde::Deserialize;
 
-use crate::{domain::task::Task, repository::task_repository};
+use crate::{
+    domain::task::Task,
+    domain::task::TaskInput,
+    service::task_service,
+    config::helpers::ServiceError
+};
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct TaskInput {
-    name: String,
-    done: bool,
-}
 
 pub fn router() -> Router {
     Router::new()
@@ -20,47 +19,51 @@ pub fn router() -> Router {
 }
 
 async fn create(Json(input): Json<TaskInput>) -> Result<(StatusCode, Json<Task>), StatusCode> {
-    task_repository::create(&input.name, input.done)
+    task_service::create(&input.name, input.done)
         .await
         .map(|task| (StatusCode::CREATED, Json(task)))
-        .map_err(database_error)
+        .map_err(service_error)
 }
 
 async fn update(
     Path(id): Path<u32>,
     Json(input): Json<TaskInput>,
 ) -> Result<Json<Task>, StatusCode> {
-    task_repository::update(id, &input.name, input.done)
+    task_service::update(id, &input.name, input.done)
         .await
-        .map_err(database_error)?
         .map(Json)
-        .ok_or(StatusCode::NOT_FOUND)
+        .map_err(service_error)
 }
 
 async fn delete(Path(id): Path<u32>) -> Result<StatusCode, StatusCode> {
-    task_repository::delete(id)
+    task_service::delete(id)
         .await
-        .map_err(database_error)?
-        .then_some(StatusCode::NO_CONTENT)
-        .ok_or(StatusCode::NOT_FOUND)
+        .map(|()| StatusCode::NO_CONTENT)
+        .map_err(service_error)
 }
 
 async fn find_all() -> Result<Json<Vec<Task>>, StatusCode> {
-    task_repository::find_all()
+    task_service::find_all()
         .await
         .map(Json)
-        .map_err(database_error)
+        .map_err(service_error)
 }
 
 async fn find_by_id(Path(id): Path<u32>) -> Result<Json<Task>, StatusCode> {
-    task_repository::find_by_id(id)
+    task_service::find_by_id(id)
         .await
-        .map_err(database_error)?
         .map(Json)
-        .ok_or(StatusCode::NOT_FOUND)
+        .map_err(service_error)
 }
 
-fn database_error(error: sqlx::Error) -> StatusCode {
-    eprintln!("Task database operation failed: {error}");
-    StatusCode::INTERNAL_SERVER_ERROR
+// Funciones privada
+
+fn service_error(error: ServiceError) -> StatusCode {
+    match error {
+        ServiceError::NotFound => StatusCode::NOT_FOUND,
+        ServiceError::Database(error) => {
+            eprintln!("Task service operation failed: {error}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        }
+    }
 }

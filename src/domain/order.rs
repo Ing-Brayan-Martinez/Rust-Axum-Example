@@ -4,6 +4,14 @@ use chrono::NaiveDateTime;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrderInput {
+    pub name: String,
+    pub amount: Decimal,
+    pub discount: Decimal,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Order {

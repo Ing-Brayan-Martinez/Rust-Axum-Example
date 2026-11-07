@@ -2,6 +2,7 @@ mod config;
 mod controller;
 mod domain;
 mod repository;
+mod service;
 
 use axum::{Router, routing::get};
 use controller::{index_controller::root, order_controller, product_controller, task_controller};

@@ -1,6 +1,13 @@
 use serde::{Deserialize, Serialize};
 use std::format;
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TaskInput {
+    pub name: String,
+    pub done: bool,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Task {
