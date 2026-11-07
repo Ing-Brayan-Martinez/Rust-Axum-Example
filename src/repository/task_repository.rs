@@ -60,7 +60,6 @@ pub async fn find_by_id(id: u32) -> Result<Option<Task>, sqlx::Error> {
     row.map(row_to_task).transpose()
 }
 
-
 // Funciones privada
 
 fn database_id(id: u32) -> Result<i32, sqlx::Error> {

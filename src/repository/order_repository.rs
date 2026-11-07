@@ -59,11 +59,11 @@ pub async fn find_all() -> Result<Vec<Order>, sqlx::Error> {
         "SELECT order_id, name, amount, discount, created_at, updated_at \
          FROM orders ORDER BY order_id",
     )
-        .fetch_all(db)
-        .await?
-        .into_iter()
-        .map(row_to_order)
-        .collect()
+    .fetch_all(db)
+    .await?
+    .into_iter()
+    .map(row_to_order)
+    .collect()
 }
 
 pub async fn find_by_id(order_id: i64) -> Result<Option<Order>, sqlx::Error> {
@@ -72,9 +72,9 @@ pub async fn find_by_id(order_id: i64) -> Result<Option<Order>, sqlx::Error> {
         "SELECT order_id, name, amount, discount, created_at, updated_at \
          FROM orders WHERE order_id = $1",
     )
-        .bind(order_id)
-        .fetch_optional(db)
-        .await?;
+    .bind(order_id)
+    .fetch_optional(db)
+    .await?;
 
     row.map(row_to_order).transpose()
 }
