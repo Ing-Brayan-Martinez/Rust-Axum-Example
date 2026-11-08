@@ -4,8 +4,10 @@ use tokio::sync::OnceCell;
 static DB_POOL: OnceCell<PgPool> = OnceCell::const_new();
 
 pub async fn get_db() -> Result<&'static PgPool, Error> {
-    let url = "postgres://postgres:tu_contraseña@localhost:5432/tu_base_de_datos";
+    let url = std::env::var("DATABASE_URL")
+        .map_err(|error| Error::Configuration(Box::new(error)))?;
+    
     DB_POOL
-        .get_or_try_init(|| async { PgPool::connect(url).await })
+        .get_or_try_init(|| async { PgPool::connect(&url).await })
         .await
 }

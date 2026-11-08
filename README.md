@@ -53,7 +53,7 @@ Rust-Axum-Example/
 
 ## 📡 Endpoints
 
-El servidor escucha en el puerto `3000`. Las rutas CRUD están bajo `/api/v1`.
+El puerto del servidor se configura con `PORT` (por defecto, `3000`). Las rutas CRUD están bajo `/api/v1`.
 
 | Recurso | Método | Ruta | Descripción |
 | :--- | :--- | :--- | :--- |
@@ -118,7 +118,13 @@ Para actualizar una tarea, envía `id`, `name` y `done` en el cuerpo de
 
 ### 1. Iniciar PostgreSQL con Docker
 
-La URL de conexión está definida en `src/config/postgresql_conmection.rs`. Para usarla sin modificarla, inicia una base de datos con estos valores:
+La aplicación lee `DATABASE_URL` y `PORT` del archivo `.env` en la raíz del proyecto. Copia `.env.example` a `.env` y ajusta la URL de PostgreSQL si es necesario:
+
+```bash
+cp .env.example .env
+```
+
+El ejemplo utiliza las credenciales de este contenedor local:
 
 ```bash
 docker run --name rust-axum-postgres \
@@ -128,7 +134,7 @@ docker run --name rust-axum-postgres \
   -d postgres:14
 ```
 
-> Cambia las credenciales de ejemplo antes de usar este proyecto fuera de un entorno local. La configuración actual está codificada en el código y debe actualizarse si eliges otros valores.
+No subas `.env` al repositorio; está excluido por `.gitignore`. En otros entornos puedes definir `DATABASE_URL` y `PORT` directamente en las variables de entorno del sistema.
 
 ### 2. Crear las tablas
 
@@ -176,7 +182,7 @@ cargo test
 cargo run
 ```
 
-La API estará disponible en `http://localhost:3000`. El endpoint `GET /` responde `Server is alive`.
+La API estará disponible en `http://localhost:<PORT>` (por defecto, `http://localhost:3000`). El endpoint `GET /` responde `Server is alive`.
 
 ### Logs y diagnóstico
 
@@ -212,5 +218,5 @@ curl -X POST http://localhost:3000/api/v1/task \
 ## 📝 Notas
 
 - La conexión PostgreSQL se inicializa de forma diferida al realizar la primera operación de repositorio.
-- La URL de conexión de ejemplo está en `src/config/postgresql_conmection.rs`; se recomienda moverla a una variable de entorno antes de desplegar.
+- La URL de conexión se configura con `DATABASE_URL` y el puerto de escucha con `PORT`; ambos pueden definirse en `.env`.
 - Este proyecto no incluye actualmente Swagger/OpenAPI, Dockerfile de la aplicación ni configuración de Kubernetes.

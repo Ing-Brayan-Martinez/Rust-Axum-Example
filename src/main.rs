@@ -12,6 +12,8 @@ use tracing_subscriber::{EnvFilter, filter::LevelFilter, fmt::format::FmtSpan};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    load_dotenv()?;
+
     tracing_subscriber::fmt()
         .with_env_filter(
             EnvFilter::builder()
@@ -49,4 +51,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     axum::serve(listener, app).await?;
     Ok(())
+}
+
+fn load_dotenv() -> Result<(), dotenvy::Error> {
+    match dotenvy::dotenv() {
+        Ok(_) => Ok(()),
+        Err(dotenvy::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error),
+    }
 }
