@@ -1,18 +1,11 @@
-mod config;
-mod controller;
-mod domain;
-mod repository;
-mod service;
-
-use axum::{Router, routing::get};
-use controller::{index_controller::root, order_controller, product_controller, task_controller};
-use tower_http::trace::{DefaultOnResponse, TraceLayer};
-use tracing::{Level, info};
+use rust_axum_example::{config::api_key::load_api_key, create_app};
+use tracing::info;
 use tracing_subscriber::{EnvFilter, filter::LevelFilter, fmt::format::FmtSpan};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     load_dotenv()?;
+    let api_key = load_api_key()?;
 
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -23,22 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_span_events(FmtSpan::CLOSE)
         .init();
 
-    let app = Router::new()
-        .route("/", get(root))
-        .merge(order_controller::router())
-        .merge(product_controller::router())
-        .merge(task_controller::router())
-        .layer(
-            TraceLayer::new_for_http()
-                .make_span_with(|request: &axum::http::Request<_>| {
-                    tracing::info_span!(
-                        "http_request",
-                        method = %request.method(),
-                        path = %request.uri().path()
-                    )
-                })
-                .on_response(DefaultOnResponse::new().level(Level::INFO)),
-        );
+    let app = create_app(api_key);
 
     let port = std::env::var("PORT")
         .unwrap_or_else(|_| "3000".to_owned())

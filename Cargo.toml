@@ -3,6 +3,9 @@ name = "Rust-Axum-Example"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "rust_axum_example"
+
 [dependencies]
 axum = "0.8.9"
 tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "net", "sync"] }
@@ -17,3 +20,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tower-http = { version = "0.6", features = ["trace"] }
 log = "0.4.35"
 dotenvy = "0.15.7"
+subtle = "2.6"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }

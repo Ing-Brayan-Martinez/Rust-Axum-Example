@@ -118,7 +118,7 @@ Para actualizar una tarea, envía `task_id`, `name` y `done` en el cuerpo de
 
 ### 1. Iniciar PostgreSQL con Docker
 
-La aplicación lee `DATABASE_URL` y `PORT` del archivo `.env` en la raíz del proyecto. Copia `.env.example` a `.env` y ajusta la URL de PostgreSQL si es necesario:
+La aplicación lee `DATABASE_URL`, `PORT` y `API_KEY` del archivo `.env` en la raíz del proyecto. Copia `.env.example` a `.env` y ajusta la URL de PostgreSQL si es necesario:
 
 ```bash
 cp .env.example .env
@@ -134,7 +134,18 @@ docker run --name rust-axum-postgres \
   -d postgres:14
 ```
 
-No subas `.env` al repositorio; está excluido por `.gitignore`. En otros entornos puedes definir `DATABASE_URL` y `PORT` directamente en las variables de entorno del sistema.
+Genera una clave aleatoria con `openssl rand -hex 32` y asígnala a `API_KEY` en `.env`:
+
+```env
+DATABASE_URL=postgres://usuario:contraseña@localhost/base_de_datos
+PORT=3000
+API_KEY=pega_aqui_la_clave_generada
+```
+
+La aplicación no inicia si `API_KEY` falta o está vacía. No subas `.env` al repositorio; está excluido por `.gitignore`. En otros entornos puedes definir estas variables directamente en el sistema.
+Para probar desde otra terminal, exporta allí el mismo valor con `export API_KEY='tu_clave'`.
+
+Todos los endpoints bajo `/api/v1/*` requieren la clave en el encabezado `X-API-Key`. El endpoint público `GET /` no requiere autenticación. No envíes la clave en la URL ni la registres en logs; usa HTTPS en entornos reales.
 
 ### 2. Crear las tablas
 
@@ -183,6 +194,14 @@ cargo run
 
 La API estará disponible en `http://localhost:<PORT>` (por defecto, `http://localhost:3000`). El endpoint `GET /` responde `Server is alive`.
 
+Las pruebas de integración están en `tests/`. La prueba de conexión a PostgreSQL
+está ignorada por defecto para no exigir una base de datos al ejecutar toda la
+suite; para ejecutarla, configura `DATABASE_URL` y usa:
+
+```bash
+cargo test --test database -- --ignored
+```
+
 ### Logs y diagnóstico
 
 La aplicación usa `tracing` para registrar el inicio del servidor, errores de
@@ -201,7 +220,8 @@ de query para evitar exponer tokens u otros datos sensibles.
 ## 🧪 Prueba rápida
 
 ```bash
-curl http://localhost:3000/api/v1/task
+curl http://localhost:3000/api/v1/task \
+  -H "X-API-Key: $API_KEY"
 ```
 
 Crear una tarea:
@@ -209,6 +229,7 @@ Crear una tarea:
 ```bash
 curl -X POST http://localhost:3000/api/v1/task \
   -H 'Content-Type: application/json' \
+  -H "X-API-Key: $API_KEY" \
   -d '{"name":"Primera tarea","done":false}'
 ```
 
@@ -217,5 +238,5 @@ curl -X POST http://localhost:3000/api/v1/task \
 ## 📝 Notas
 
 - La conexión PostgreSQL se inicializa de forma diferida al realizar la primera operación de repositorio.
-- La URL de conexión se configura con `DATABASE_URL` y el puerto de escucha con `PORT`; ambos pueden definirse en `.env`.
+- La conexión PostgreSQL se configura con `DATABASE_URL`, el puerto con `PORT` y la autenticación con `API_KEY`; pueden definirse en `.env`.
 - Este proyecto no incluye actualmente Swagger/OpenAPI, Dockerfile de la aplicación ni configuración de Kubernetes.
