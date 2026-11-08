@@ -1,31 +1,28 @@
 use chrono::NaiveDateTime;
-use rust_decimal::Decimal;
 use sqlx::{Row, postgres::PgRow};
 
 use crate::{config::postgresql_conmection::get_db, domain::product::Product};
 
-pub async fn create(name: &str, price: Decimal, stock: i32) -> Result<Product, sqlx::Error> {
+pub async fn create(product: Product) -> Result<Product, sqlx::Error> {
     let db = get_db().await?;
     let row = sqlx::query(
-        "INSERT INTO products (name, price, stock, created_at, updated_at) \
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
+        "INSERT INTO products (product_id, name, price, stock, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6) \
          RETURNING product_id, name, price, stock, created_at, updated_at",
     )
-    .bind(name)
-    .bind(price)
-    .bind(stock)
+    .bind(product.product_id)
+    .bind(&product.name)
+    .bind(product.price)
+    .bind(product.stock)
+    .bind(product.created_at)
+    .bind(product.updated_at)
     .fetch_one(db)
     .await?;
 
     row_to_product(row)
 }
 
-pub async fn update(
-    product_id: i64,
-    name: &str,
-    price: Decimal,
-    stock: i32,
-) -> Result<Option<Product>, sqlx::Error> {
+pub async fn update(product: Product) -> Result<Option<Product>, sqlx::Error> {
     let db = get_db().await?;
     let row = sqlx::query(
         "UPDATE products \
@@ -33,17 +30,17 @@ pub async fn update(
          WHERE product_id = $4 \
          RETURNING product_id, name, price, stock, created_at, updated_at",
     )
-    .bind(name)
-    .bind(price)
-    .bind(stock)
-    .bind(product_id)
+    .bind(product.name)
+    .bind(product.price)
+    .bind(product.stock)
+    .bind(product.product_id)
     .fetch_optional(db)
     .await?;
 
     row.map(row_to_product).transpose()
 }
 
-pub async fn delete(product_id: i64) -> Result<bool, sqlx::Error> {
+pub async fn delete(product_id: uuid::Uuid) -> Result<bool, sqlx::Error> {
     let db = get_db().await?;
     let result = sqlx::query("DELETE FROM products WHERE product_id = $1")
         .bind(product_id)
@@ -66,7 +63,7 @@ pub async fn find_all() -> Result<Vec<Product>, sqlx::Error> {
     .collect()
 }
 
-pub async fn find_by_id(product_id: i64) -> Result<Option<Product>, sqlx::Error> {
+pub async fn find_by_id(product_id: uuid::Uuid) -> Result<Option<Product>, sqlx::Error> {
     let db = get_db().await?;
     let row = sqlx::query(
         "SELECT product_id, name, price, stock, created_at, updated_at \

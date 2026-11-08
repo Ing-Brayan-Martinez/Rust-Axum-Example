@@ -1,9 +1,18 @@
 use serde::{Deserialize, Serialize};
 use std::format;
+use uuid::Uuid;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct TaskInput {
+pub struct TaskCreate {
+    pub name: String,
+    pub done: bool,
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TaskUpdate {
+    pub id: Uuid,
     pub name: String,
     pub done: bool,
 }
@@ -11,7 +20,7 @@ pub struct TaskInput {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Task {
-    pub id: u32,
+    pub id: Uuid,
     pub name: String,
     pub done: bool,
 }

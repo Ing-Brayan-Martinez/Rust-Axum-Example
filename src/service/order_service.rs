@@ -23,7 +23,7 @@ pub async fn create(input: OrderCreate) -> Result<Order, ServiceError> {
     // Llamamos directamente al repositorio de forma asíncrona y manejamos el error con '?'
     let saved_order = order_repository::create(order)
         .await
-        .map_err(|_| ServiceError::NotFound)?;
+        .map_err(ServiceError::Database)?;
 
     Ok(saved_order)
 }

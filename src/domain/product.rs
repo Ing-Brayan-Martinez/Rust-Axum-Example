@@ -3,10 +3,20 @@ use std::format;
 use chrono::NaiveDateTime;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ProductInput {
+pub struct ProductCreate {
+    pub name: String,
+    pub price: Decimal,
+    pub stock: i32,
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ProductUpdate {
+    pub product_id: Uuid,
     pub name: String,
     pub price: Decimal,
     pub stock: i32,
@@ -15,7 +25,7 @@ pub struct ProductInput {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Product {
-    pub product_id: i64,
+    pub product_id: Uuid,
     pub name: String,
     pub price: Decimal,
     pub stock: i32,

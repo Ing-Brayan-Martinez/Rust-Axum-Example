@@ -1,38 +1,33 @@
 use axum::{Json, Router, extract::Path, http::StatusCode, routing::get};
-use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::{
-    config::helpers::ServiceError, domain::task::Task, domain::task::TaskInput,
+    config::helpers::ServiceError,
+    domain::task::{Task, TaskCreate, TaskUpdate},
     service::task_service,
 };
 
 pub fn router() -> Router {
     Router::new()
-        .route("/api/v1/task", get(find_all).post(create))
-        .route(
-            "/api/v1/task/{id}",
-            get(find_by_id).put(update).delete(delete),
-        )
+        .route("/api/v1/task", get(find_all).post(create).put(update))
+        .route("/api/v1/task/{id}", get(find_by_id).delete(delete))
 }
 
-async fn create(Json(input): Json<TaskInput>) -> Result<(StatusCode, Json<Task>), StatusCode> {
-    task_service::create(&input.name, input.done)
+async fn create(Json(input): Json<TaskCreate>) -> Result<(StatusCode, Json<Task>), StatusCode> {
+    task_service::create(input)
         .await
         .map(|task| (StatusCode::CREATED, Json(task)))
         .map_err(service_error)
 }
 
-async fn update(
-    Path(id): Path<u32>,
-    Json(input): Json<TaskInput>,
-) -> Result<Json<Task>, StatusCode> {
-    task_service::update(id, &input.name, input.done)
+async fn update(Json(input): Json<TaskUpdate>) -> Result<Json<Task>, StatusCode> {
+    task_service::update(input)
         .await
         .map(Json)
         .map_err(service_error)
 }
 
-async fn delete(Path(id): Path<u32>) -> Result<StatusCode, StatusCode> {
+async fn delete(Path(id): Path<Uuid>) -> Result<StatusCode, StatusCode> {
     task_service::delete(id)
         .await
         .map(|()| StatusCode::NO_CONTENT)
@@ -46,7 +41,7 @@ async fn find_all() -> Result<Json<Vec<Task>>, StatusCode> {
         .map_err(service_error)
 }
 
-async fn find_by_id(Path(id): Path<u32>) -> Result<Json<Task>, StatusCode> {
+async fn find_by_id(Path(id): Path<Uuid>) -> Result<Json<Task>, StatusCode> {
     task_service::find_by_id(id)
         .await
         .map(Json)

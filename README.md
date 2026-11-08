@@ -60,12 +60,12 @@ El servidor escucha en el puerto `3000`. Las rutas CRUD están bajo `/api/v1`.
 | Tareas | `GET` | `/api/v1/task` | Listar tareas |
 | Tareas | `GET` | `/api/v1/task/{id}` | Obtener una tarea |
 | Tareas | `POST` | `/api/v1/task` | Crear una tarea |
-| Tareas | `PUT` | `/api/v1/task/{id}` | Actualizar una tarea |
+| Tareas | `PUT` | `/api/v1/task` | Actualizar una tarea |
 | Tareas | `DELETE` | `/api/v1/task/{id}` | Eliminar una tarea |
 | Productos | `GET` | `/api/v1/product` | Listar productos |
 | Productos | `GET` | `/api/v1/product/{id}` | Obtener un producto |
 | Productos | `POST` | `/api/v1/product` | Crear un producto |
-| Productos | `PUT` | `/api/v1/product/{id}` | Actualizar un producto |
+| Productos | `PUT` | `/api/v1/product` | Actualizar un producto |
 | Productos | `DELETE` | `/api/v1/product/{id}` | Eliminar un producto |
 | Órdenes | `GET` | `/api/v1/order` | Listar órdenes |
 | Órdenes | `GET` | `/api/v1/order/{id}` | Obtener una orden |
@@ -103,6 +103,10 @@ Las búsquedas, actualizaciones o eliminaciones de registros inexistentes respon
 }
 ```
 
+Para actualizar una tarea, envía `id`, `name` y `done` en el cuerpo de
+`PUT /api/v1/task`. Para actualizar un producto, envía `productId`, `name`,
+`price` y `stock` en el cuerpo de `PUT /api/v1/product`.
+
 ---
 
 ## ⚙️ Inicio rápido
@@ -132,13 +136,13 @@ Conéctate a la base de datos y ejecuta el siguiente esquema. La aplicación no 
 
 ```sql
 CREATE TABLE tasks (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     name TEXT NOT NULL,
     done BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE products (
-    product_id BIGSERIAL PRIMARY KEY,
+    product_id UUID PRIMARY KEY,
     name TEXT NOT NULL,
     price NUMERIC NOT NULL,
     stock INTEGER NOT NULL,
@@ -155,6 +159,10 @@ CREATE TABLE orders (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+Las rutas de productos y tareas reciben UUID, al igual que las órdenes. Para bases
+de datos existentes, migra las columnas `tasks.id` y `products.product_id` a
+`UUID` antes de ejecutar esta versión; el proyecto no aplica migraciones automáticamente.
 
 ### 3. Compilar, probar y ejecutar
 
