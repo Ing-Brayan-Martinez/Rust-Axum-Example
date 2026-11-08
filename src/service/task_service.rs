@@ -10,7 +10,7 @@ use crate::{
 #[tracing::instrument(skip(input))]
 pub async fn create(input: TaskCreate) -> Result<Task, ServiceError> {
     let task = Task {
-        id: Uuid::new_v4(),
+        task_id: Uuid::new_v4(),
         name: input.name,
         done: input.done,
     };
@@ -26,7 +26,7 @@ pub async fn create(input: TaskCreate) -> Result<Task, ServiceError> {
 
 #[tracing::instrument(skip(input))]
 pub async fn update(input: TaskUpdate) -> Result<Task, ServiceError> {
-    let mut task = task_repository::find_by_id(input.id)
+    let mut task = task_repository::find_by_id(input.task_id)
         .await?
         .ok_or(ServiceError::NotFound)?;
 
@@ -39,8 +39,8 @@ pub async fn update(input: TaskUpdate) -> Result<Task, ServiceError> {
 }
 
 #[tracing::instrument]
-pub async fn delete(id: Uuid) -> Result<(), ServiceError> {
-    if task_repository::delete(id).await? {
+pub async fn delete(task_id: Uuid) -> Result<(), ServiceError> {
+    if task_repository::delete(task_id).await? {
         Ok(())
     } else {
         Err(ServiceError::NotFound)
@@ -53,8 +53,8 @@ pub async fn find_all() -> Result<Vec<Task>, ServiceError> {
 }
 
 #[tracing::instrument]
-pub async fn find_by_id(id: Uuid) -> Result<Task, ServiceError> {
-    task_repository::find_by_id(id)
+pub async fn find_by_id(task_id: Uuid) -> Result<Task, ServiceError> {
+    task_repository::find_by_id(task_id)
         .await?
         .ok_or(ServiceError::NotFound)
 }

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ProductCreate {
     pub name: String,
     pub price: Decimal,
@@ -14,7 +14,7 @@ pub struct ProductCreate {
 }
 
 #[derive(Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ProductUpdate {
     pub product_id: Uuid,
     pub name: String,
@@ -23,7 +23,7 @@ pub struct ProductUpdate {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Product {
     pub product_id: Uuid,
     pub name: String,

@@ -103,7 +103,7 @@ Las búsquedas, actualizaciones o eliminaciones de registros inexistentes respon
 }
 ```
 
-Para actualizar una tarea, envía `id`, `name` y `done` en el cuerpo de
+Para actualizar una tarea, envía `task_id`, `name` y `done` en el cuerpo de
 `PUT /api/v1/task`. Para actualizar un producto, envía `productId`, `name`,
 `price` y `stock` en el cuerpo de `PUT /api/v1/product`.
 
@@ -146,13 +146,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
        
 -- Tablas 
 CREATE TABLE tasks (
-    id UUID PRIMARY KEY,
+    task_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     done BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE products (
-    product_id UUID PRIMARY KEY,
+    product_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     price NUMERIC NOT NULL,
     stock INTEGER NOT NULL,
@@ -161,7 +161,7 @@ CREATE TABLE products (
 );
 
 CREATE TABLE orders (
-    order_id BIGSERIAL PRIMARY KEY,
+    order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     amount NUMERIC NOT NULL,
     discount NUMERIC NOT NULL,
@@ -171,8 +171,7 @@ CREATE TABLE orders (
 ```
 
 Las rutas de productos y tareas reciben UUID, al igual que las órdenes. Para bases
-de datos existentes, migra las columnas `tasks.id` y `products.product_id` a
-`UUID` antes de ejecutar esta versión; el proyecto no aplica migraciones automáticamente.
+de datos existentes; el proyecto no aplica migraciones automáticamente.
 
 ### 3. Compilar, probar y ejecutar
 

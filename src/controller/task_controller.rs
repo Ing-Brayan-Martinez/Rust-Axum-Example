@@ -27,8 +27,8 @@ async fn update(Json(input): Json<TaskUpdate>) -> Result<Json<Task>, StatusCode>
         .map_err(service_error)
 }
 
-async fn delete(Path(id): Path<Uuid>) -> Result<StatusCode, StatusCode> {
-    task_service::delete(id)
+async fn delete(Path(task_id): Path<Uuid>) -> Result<StatusCode, StatusCode> {
+    task_service::delete(task_id)
         .await
         .map(|()| StatusCode::NO_CONTENT)
         .map_err(service_error)
@@ -41,8 +41,8 @@ async fn find_all() -> Result<Json<Vec<Task>>, StatusCode> {
         .map_err(service_error)
 }
 
-async fn find_by_id(Path(id): Path<Uuid>) -> Result<Json<Task>, StatusCode> {
-    task_service::find_by_id(id)
+async fn find_by_id(Path(task_id): Path<Uuid>) -> Result<Json<Task>, StatusCode> {
+    task_service::find_by_id(task_id)
         .await
         .map(Json)
         .map_err(service_error)

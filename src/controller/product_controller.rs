@@ -13,9 +13,8 @@ pub fn router() -> Router {
         .route("/api/v1/product/{id}", get(find_by_id).delete(delete))
 }
 
-async fn create(
-    Json(input): Json<ProductCreate>,
-) -> Result<(StatusCode, Json<Product>), StatusCode> {
+async fn create(Json(input): Json<ProductCreate>)
+    -> Result<(StatusCode, Json<Product>), StatusCode> {
     product_service::create(input)
         .await
         .map(|product| (StatusCode::CREATED, Json(product)))
