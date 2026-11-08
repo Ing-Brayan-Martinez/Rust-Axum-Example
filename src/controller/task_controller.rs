@@ -2,12 +2,9 @@ use axum::{Json, Router, extract::Path, http::StatusCode, routing::get};
 use serde::Deserialize;
 
 use crate::{
-    domain::task::Task,
-    domain::task::TaskInput,
+    config::helpers::ServiceError, domain::task::Task, domain::task::TaskInput,
     service::task_service,
-    config::helpers::ServiceError
 };
-
 
 pub fn router() -> Router {
     Router::new()

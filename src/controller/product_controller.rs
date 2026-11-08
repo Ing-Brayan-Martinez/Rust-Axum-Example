@@ -1,10 +1,8 @@
 use axum::{Json, Router, extract::Path, http::StatusCode, routing::get};
 
 use crate::{
-    config::helpers::ServiceError,
-    domain::product::Product,
-    domain::product::ProductInput,
-    service::product_service
+    config::helpers::ServiceError, domain::product::Product, domain::product::ProductInput,
+    service::product_service,
 };
 
 pub fn router() -> Router {

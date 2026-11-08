@@ -1,31 +1,28 @@
-use chrono::NaiveDateTime;
-use rust_decimal::Decimal;
-use sqlx::{Row, postgres::PgRow};
-
 use crate::{config::postgresql_conmection::get_db, domain::order::Order};
+use chrono::NaiveDateTime;
+use sqlx::{Row, postgres::PgRow};
+use uuid::Uuid;
 
-pub async fn create(name: &str, amount: Decimal, discount: Decimal) -> Result<Order, sqlx::Error> {
+pub async fn create(order: Order) -> Result<Order, sqlx::Error> {
     let db = get_db().await?;
     let row = sqlx::query(
-        "INSERT INTO orders (name, amount, discount, created_at, updated_at) \
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) \
+        "INSERT INTO orders (order_id, name, amount, discount, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6) \
          RETURNING order_id, name, amount, discount, created_at, updated_at",
     )
-    .bind(name)
-    .bind(amount)
-    .bind(discount)
+    .bind(order.order_id)
+    .bind(&order.name)
+    .bind(order.amount)
+    .bind(order.discount)
+    .bind(order.created_at)
+    .bind(order.updated_at)
     .fetch_one(db)
     .await?;
 
     row_to_order(row)
 }
 
-pub async fn update(
-    order_id: i64,
-    name: &str,
-    amount: Decimal,
-    discount: Decimal,
-) -> Result<Option<Order>, sqlx::Error> {
+pub async fn update(order: Order) -> Result<Option<Order>, sqlx::Error> {
     let db = get_db().await?;
     let row = sqlx::query(
         "UPDATE orders \
@@ -33,17 +30,17 @@ pub async fn update(
          WHERE order_id = $4 \
          RETURNING order_id, name, amount, discount, created_at, updated_at",
     )
-    .bind(name)
-    .bind(amount)
-    .bind(discount)
-    .bind(order_id)
+    .bind(order.name)
+    .bind(order.amount)
+    .bind(order.discount)
+    .bind(order.order_id)
     .fetch_optional(db)
     .await?;
 
     row.map(row_to_order).transpose()
 }
 
-pub async fn delete(order_id: i64) -> Result<bool, sqlx::Error> {
+pub async fn delete(order_id: Uuid) -> Result<bool, sqlx::Error> {
     let db = get_db().await?;
     let result = sqlx::query("DELETE FROM orders WHERE order_id = $1")
         .bind(order_id)
@@ -66,7 +63,7 @@ pub async fn find_all() -> Result<Vec<Order>, sqlx::Error> {
     .collect()
 }
 
-pub async fn find_by_id(order_id: i64) -> Result<Option<Order>, sqlx::Error> {
+pub async fn find_by_id(order_id: Uuid) -> Result<Option<Order>, sqlx::Error> {
     let db = get_db().await?;
     let row = sqlx::query(
         "SELECT order_id, name, amount, discount, created_at, updated_at \

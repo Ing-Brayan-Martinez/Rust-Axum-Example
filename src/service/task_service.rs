@@ -1,4 +1,4 @@
-use crate::{domain::task::Task, repository::task_repository, config::helpers::ServiceError};
+use crate::{config::helpers::ServiceError, domain::task::Task, repository::task_repository};
 
 pub async fn create(name: &str, done: bool) -> Result<Task, ServiceError> {
     Ok(task_repository::create(name, done).await?)
@@ -27,4 +27,3 @@ pub async fn find_by_id(id: u32) -> Result<Task, ServiceError> {
         .await?
         .ok_or(ServiceError::NotFound)
 }
-

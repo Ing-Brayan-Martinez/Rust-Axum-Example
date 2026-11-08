@@ -8,18 +8,22 @@ use axum::{Router, routing::get};
 use controller::{index_controller::root, order_controller, product_controller, task_controller};
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/", get(root))
         .merge(order_controller::router())
         .merge(product_controller::router())
         .merge(task_controller::router());
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
-        .await
-        .expect("Failed to bind to address");
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_owned())
+        .parse::<u16>()?;
+    let address = format!("0.0.0.0:{port}");
+    
+    let listener = tokio::net::TcpListener::bind(&address).await?;
 
-    axum::serve(listener, app).await.expect("Failed run Axum");
+    println!("Server listening on http://localhost:{port}");
 
-    println!("Server running on http:://localhost:3000")
+    axum::serve(listener, app).await?;
+    Ok(())
 }

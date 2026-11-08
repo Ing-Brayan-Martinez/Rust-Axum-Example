@@ -1,23 +1,73 @@
-use rust_decimal::Decimal;
+use crate::domain::order::{OrderCreate, OrderUpdate};
+use crate::{config::helpers::ServiceError, domain::order::Order, repository::order_repository};
+use chrono::Utc;
+use rx_rust::{
+    observable::ObservableExt, operators::creating::from_future::FromFuture,
+    operators::creating::just::Just, scheduler::runtime::tokio::TokioScheduler,
+};
+use uuid::Uuid;
 
-use crate::{domain::order::Order, repository::order_repository, config::helpers::ServiceError};
+pub async fn create(input: OrderCreate) -> Result<Order, ServiceError> {
+    let id = Uuid::new_v4();
+    let now = Utc::now().naive_utc();
 
-pub async fn create(name: &str, amount: Decimal, discount: Decimal) -> Result<Order, ServiceError> {
-    Ok(order_repository::create(name, amount, discount).await?)
+    let order = Order {
+        order_id: id,
+        created_at: now,
+        updated_at: now,
+        name: input.name,
+        amount: input.amount,
+        discount: input.discount,
+    };
+
+    // Llamamos directamente al repositorio de forma asíncrona y manejamos el error con '?'
+    let saved_order = order_repository::create(order)
+        .await
+        .map_err(|_| ServiceError::NotFound)?;
+
+    Ok(saved_order)
 }
 
-pub async fn update(
-    order_id: i64,
-    name: &str,
-    amount: Decimal,
-    discount: Decimal,
-) -> Result<Order, ServiceError> {
-    order_repository::update(order_id, name, amount, discount)
+pub async fn create2(input: OrderCreate) -> Result<Order, ServiceError> {
+    Just::new(input)
+        .map(|oi: OrderCreate| {
+            let id = Uuid::new_v4();
+            let now: chrono::NaiveDateTime = Utc::now().naive_utc();
+            let order = Order {
+                order_id: id,
+                created_at: now,
+                updated_at: now,
+                name: oi.name,
+                amount: oi.amount,
+                discount: oi.discount,
+            };
+            order
+        })
+        .flat_map(|order: Order| {
+            let future = order_repository::create(order);
+            FromFuture::new(future, TokioScheduler::current())
+        })
+        .into_future()
+        .await
+        .unwrap()
+        .map_err(|_| ServiceError::NotFound)
+}
+
+pub async fn update(input: OrderUpdate) -> Result<Order, ServiceError> {
+    let mut order = order_repository::find_by_id(input.order_id)
+        .await?
+        .unwrap();
+
+    order.name = input.name;
+    order.amount = input.amount;
+    order.discount = input.discount;
+
+    order_repository::update(order)
         .await?
         .ok_or(ServiceError::NotFound)
 }
 
-pub async fn delete(order_id: i64) -> Result<(), ServiceError> {
+pub async fn delete(order_id: Uuid) -> Result<(), ServiceError> {
     if order_repository::delete(order_id).await? {
         Ok(())
     } else {
@@ -29,7 +79,7 @@ pub async fn find_all() -> Result<Vec<Order>, ServiceError> {
     Ok(order_repository::find_all().await?)
 }
 
-pub async fn find_by_id(order_id: i64) -> Result<Order, ServiceError> {
+pub async fn find_by_id(order_id: Uuid) -> Result<Order, ServiceError> {
     order_repository::find_by_id(order_id)
         .await?
         .ok_or(ServiceError::NotFound)
