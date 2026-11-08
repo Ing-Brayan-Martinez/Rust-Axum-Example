@@ -6,7 +6,9 @@ use rx_rust::{
     operators::creating::just::Just, scheduler::runtime::tokio::TokioScheduler,
 };
 use uuid::Uuid;
+use log::info;
 
+#[tracing::instrument(skip(input))]
 pub async fn create(input: OrderCreate) -> Result<Order, ServiceError> {
     let id = Uuid::new_v4();
     let now = Utc::now().naive_utc();
@@ -25,9 +27,12 @@ pub async fn create(input: OrderCreate) -> Result<Order, ServiceError> {
         .await
         .map_err(ServiceError::Database)?;
 
+    info!("{}", saved_order.clone().to_string());
+    
     Ok(saved_order)
 }
 
+#[tracing::instrument(skip(input))]
 pub async fn create2(input: OrderCreate) -> Result<Order, ServiceError> {
     Just::new(input)
         .map(|oi: OrderCreate| {
@@ -53,10 +58,9 @@ pub async fn create2(input: OrderCreate) -> Result<Order, ServiceError> {
         .map_err(|_| ServiceError::NotFound)
 }
 
+#[tracing::instrument(skip(input))]
 pub async fn update(input: OrderUpdate) -> Result<Order, ServiceError> {
-    let mut order = order_repository::find_by_id(input.order_id)
-        .await?
-        .unwrap();
+    let mut order = order_repository::find_by_id(input.order_id).await?.unwrap();
 
     order.name = input.name;
     order.amount = input.amount;
@@ -67,6 +71,7 @@ pub async fn update(input: OrderUpdate) -> Result<Order, ServiceError> {
         .ok_or(ServiceError::NotFound)
 }
 
+#[tracing::instrument]
 pub async fn delete(order_id: Uuid) -> Result<(), ServiceError> {
     if order_repository::delete(order_id).await? {
         Ok(())
@@ -75,10 +80,12 @@ pub async fn delete(order_id: Uuid) -> Result<(), ServiceError> {
     }
 }
 
+#[tracing::instrument]
 pub async fn find_all() -> Result<Vec<Order>, ServiceError> {
     Ok(order_repository::find_all().await?)
 }
 
+#[tracing::instrument]
 pub async fn find_by_id(order_id: Uuid) -> Result<Order, ServiceError> {
     order_repository::find_by_id(order_id)
         .await?

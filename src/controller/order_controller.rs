@@ -62,7 +62,7 @@ fn service_error(error: ServiceError) -> StatusCode {
     match error {
         ServiceError::NotFound => StatusCode::NOT_FOUND,
         ServiceError::Database(error) => {
-            eprintln!("Order service operation failed: {error}");
+            tracing::error!(error = %error, "Order service operation failed");
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }

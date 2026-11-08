@@ -1,4 +1,5 @@
 use chrono::Utc;
+use log::info;
 use uuid::Uuid;
 
 use crate::{
@@ -7,6 +8,7 @@ use crate::{
     repository::product_repository,
 };
 
+#[tracing::instrument(skip(input))]
 pub async fn create(input: ProductCreate) -> Result<Product, ServiceError> {
     let now = Utc::now().naive_utc();
     let product = Product {
@@ -22,9 +24,12 @@ pub async fn create(input: ProductCreate) -> Result<Product, ServiceError> {
         .await
         .map_err(ServiceError::Database)?;
 
+    info!("{}", saved_product.clone().to_string());
+    
     Ok(saved_product)
 }
 
+#[tracing::instrument(skip(input))]
 pub async fn update(input: ProductUpdate) -> Result<Product, ServiceError> {
     let mut product = product_repository::find_by_id(input.product_id)
         .await?
@@ -39,6 +44,7 @@ pub async fn update(input: ProductUpdate) -> Result<Product, ServiceError> {
         .ok_or(ServiceError::NotFound)
 }
 
+#[tracing::instrument]
 pub async fn delete(product_id: Uuid) -> Result<(), ServiceError> {
     if product_repository::delete(product_id).await? {
         Ok(())
@@ -47,11 +53,13 @@ pub async fn delete(product_id: Uuid) -> Result<(), ServiceError> {
     }
 }
 
+#[tracing::instrument]
 pub async fn find_all() -> Result<Vec<Product>, ServiceError> {
     let list = product_repository::find_all().await?;
     Ok(list)
 }
 
+#[tracing::instrument]
 pub async fn find_by_id(product_id: Uuid) -> Result<Product, ServiceError> {
     product_repository::find_by_id(product_id)
         .await?

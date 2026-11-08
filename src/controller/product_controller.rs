@@ -13,7 +13,9 @@ pub fn router() -> Router {
         .route("/api/v1/product/{id}", get(find_by_id).delete(delete))
 }
 
-async fn create(Json(input): Json<ProductCreate>) -> Result<(StatusCode, Json<Product>), StatusCode> {
+async fn create(
+    Json(input): Json<ProductCreate>,
+) -> Result<(StatusCode, Json<Product>), StatusCode> {
     product_service::create(input)
         .await
         .map(|product| (StatusCode::CREATED, Json(product)))
@@ -54,7 +56,7 @@ fn service_error(error: ServiceError) -> StatusCode {
     match error {
         ServiceError::NotFound => StatusCode::NOT_FOUND,
         ServiceError::Database(error) => {
-            eprintln!("Product service operation failed: {error}");
+            tracing::error!(error = %error, "Product service operation failed");
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }

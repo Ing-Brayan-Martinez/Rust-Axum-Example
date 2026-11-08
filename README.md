@@ -174,6 +174,19 @@ cargo run
 
 La API estará disponible en `http://localhost:3000`. El endpoint `GET /` responde `Server is alive`.
 
+### Logs y diagnóstico
+
+La aplicación usa `tracing` para registrar el inicio del servidor, errores de
+servicio, duración de spans y solicitudes HTTP (método, ruta, estado y latencia).
+El filtro predeterminado es `info`; puedes cambiarlo con `RUST_LOG`:
+
+```bash
+RUST_LOG=debug cargo run
+```
+
+Los valores de entrada no se registran. Las rutas se registran sin parámetros
+de query para evitar exponer tokens u otros datos sensibles.
+
 ---
 
 ## 🧪 Prueba rápida
