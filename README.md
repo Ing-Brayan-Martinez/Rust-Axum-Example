@@ -135,6 +135,10 @@ docker run --name rust-axum-postgres \
 Conéctate a la base de datos y ejecuta el siguiente esquema. La aplicación no ejecuta migraciones automáticamente.
 
 ```sql
+-- Para generar UUIDs
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+       
+-- Tablas 
 CREATE TABLE tasks (
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
